@@ -152,6 +152,7 @@ export class CrawlerService {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: null,
+      args: ['--no-sandbox'],
     });
     const page = await browser.newPage();
 
