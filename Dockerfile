@@ -4,6 +4,9 @@ ENV APP_ROOT /src
 WORKDIR ${APP_ROOT}
 COPY package*.json ./
 
+RUN corepack enable
+RUN corepack prepare pnpm@latest --activate
+
 RUN pnpm install
 
 RUN apt-get update \
