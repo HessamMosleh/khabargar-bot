@@ -150,8 +150,7 @@ export class CrawlerService {
 
   private async initPuppeteer(url) {
     const browser = await puppeteer.launch({
-      headless: false,
-      defaultViewport: null,
+      headless: true,
       executablePath: '/usr/bin/google-chrome',
       args: ['--no-sandbox'],
     });
