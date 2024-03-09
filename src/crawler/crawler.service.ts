@@ -152,7 +152,7 @@ export class CrawlerService {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: null,
-      args: ['--no-sandbox'],
+      executablePath: '/usr/bin/google-chrome',
     });
     const page = await browser.newPage();
 
