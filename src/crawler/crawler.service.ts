@@ -153,6 +153,7 @@ export class CrawlerService {
       headless: false,
       defaultViewport: null,
       executablePath: '/usr/bin/google-chrome',
+      args: ['--no-sandbox'],
     });
     const page = await browser.newPage();
 
