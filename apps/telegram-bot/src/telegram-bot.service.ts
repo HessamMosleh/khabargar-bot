@@ -3,6 +3,7 @@ import { Context, Markup, Telegraf } from 'telegraf';
 import * as process from 'process';
 import { ClientProxy } from '@nestjs/microservices';
 import { CRAWLER_SERVICE } from './constants/service';
+import { catchError, of } from 'rxjs';
 
 @Injectable()
 export class TelegramBotService {
@@ -22,8 +23,8 @@ export class TelegramBotService {
     await bot.launch();
 
     // Enable graceful stop
-    // process.once('SIGINT', () => bot.stop('SIGINT'));
-    // process.once('SIGTERM', () => bot.stop('SIGTERM'));
+    process.once('SIGINT', () => bot.stop('SIGINT'));
+    process.once('SIGTERM', () => bot.stop('SIGTERM'));
   };
 
   initNewsWebsitesKeyboard(bot: Telegraf<Context>): any {
@@ -64,17 +65,19 @@ export class TelegramBotService {
 
     bot.action('qom_events', async (ctx) => {
       await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید');
-      this.crawlerClient.send('qom-events', {}).subscribe(async (events) => {
-        if (!events.at(1))
-          await ctx.editMessageText(
-            'سایت با مشکل مواجه شده است لطفا دباره تلاش کنید',
-          );
-        else
-          for (const newEl of events)
-            await ctx.reply(newEl, { parse_mode: 'Markdown' });
-      });
+      this.crawlerClient
+        .send('qom-events', {})
+        .pipe(catchError((val) => of(`I caught: ${val}`)))
+        .subscribe(async (events) => {
+          if (!events.at(1))
+            await ctx.editMessageText(
+              'سایت با مشکل مواجه شده است لطفا دباره تلاش کنید',
+            );
+          else
+            for (const newEl of events)
+              await ctx.reply(newEl, { parse_mode: 'Markdown' });
+        });
     });
-
     bot.action(/^qom_count_\d+$/, async (ctx) => {
       await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید');
       this.crawlerClient
