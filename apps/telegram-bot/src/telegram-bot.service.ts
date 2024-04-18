@@ -51,7 +51,7 @@ export class TelegramBotService {
       ),
     );
 
-    bot.action('qom-news', (ctx) =>
+    bot.action('qom_news', (ctx) =>
       ctx.editMessageText(
         'چند خبر برگرداند',
         Markup.inlineKeyboard([
@@ -63,7 +63,7 @@ export class TelegramBotService {
       ),
     );
 
-    bot.action('qom-events', async (ctx) => {
+    bot.action('qom_events', async (ctx) => {
       await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید');
       this.crawlerClient
         .send('qom-events', {})
