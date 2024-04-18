@@ -69,7 +69,7 @@ export class TelegramBotService {
         .send('qom-events', {})
         .pipe(catchError((val) => of(`I caught: ${val}`)))
         .subscribe(async (events) => {
-          if (!events.at(1))
+          if (!Array.isArray(events))
             await ctx.editMessageText(
               'سایت با مشکل مواجه شده است لطفا دباره تلاش کنید',
             );
