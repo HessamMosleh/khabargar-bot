@@ -84,8 +84,9 @@ export class TelegramBotService {
         .send('qom-news', {
           count: Number(ctx.match[0].split('_')[2]),
         })
+        .pipe(catchError((val) => of(`I caught: ${val}`)))
         .subscribe(async (news) => {
-          if (!news.at(1))
+          if (!Array.isArray(news))
             await ctx.editMessageText(
               'سایت با مشکل مواجه شده است لطفا دباره تلاش کنید',
             );
@@ -99,14 +100,17 @@ export class TelegramBotService {
   private handleEvandSiteSection(bot: Telegraf<Context>) {
     bot.hears('ایوند', async (ctx) => {
       const message = await ctx.reply('در حال استخراج لطفا یک دقیقه صبر کنید');
-      this.crawlerClient.send('evand', {}).subscribe(async (events) => {
-        await ctx.deleteMessage(message.message_id);
-        if (!events.at(1))
-          await ctx.reply('سایت با مشکل مواجه شده است لطفا دباره تلاش کنید');
-        else
-          for (const newEl of events)
-            await ctx.reply(newEl, { parse_mode: 'Markdown' });
-      });
+      this.crawlerClient
+        .send('evand', {})
+        .pipe(catchError((val) => of(`I caught: ${val}`)))
+        .subscribe(async (events) => {
+          await ctx.deleteMessage(message.message_id);
+          if (!Array.isArray(events))
+            await ctx.reply('سایت با مشکل مواجه شده است لطفا دباره تلاش کنید');
+          else
+            for (const newEl of events)
+              await ctx.reply(newEl, { parse_mode: 'Markdown' });
+        });
     });
   }
 }
