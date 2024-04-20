@@ -130,6 +130,37 @@ export class CrawlerService {
     await browser.close();
     return events;
   }
+
+  async crawlingQomSTP() {
+    const currentURL =
+      'https://qomstp.ir/%D8%A2%D8%B1%D8%B4%DB%8C%D9%88-%D8%A7%D8%AE%D8%A8%D8%A7%D8%B1';
+
+    await this.checkUrlHealth(currentURL);
+    const { browser, page } = await this.initPuppeteer(currentURL);
+
+    const eventsHandles = await page.$$('main > div > div > div');
+
+    const events = [];
+    for (const event of eventsHandles) {
+      const title = await page.evaluate(
+        (el) =>
+          el.querySelector('div  > a > div.card-body.px-2 > h3')?.textContent,
+        event,
+      );
+
+      const eventLink = await page.evaluate(
+        (el) => el.querySelector('div > div > a')?.getAttribute('href'),
+        event,
+      );
+      if (title && eventLink)
+        events.push(`*${title}*\n\nلینک خبر:${eventLink}`);
+    }
+
+    await browser.close();
+
+    return events;
+  }
+
   private async checkUrlHealth(url) {
     const resp = await fetch(url);
     if (resp.status > 399) {
@@ -150,8 +181,8 @@ export class CrawlerService {
 
   private async initPuppeteer(url) {
     const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: '/usr/bin/google-chrome',
+      headless: false,
+      // executablePath: '/usr/bin/google-chrome',
       args: ['--no-sandbox'],
     });
     const page = await browser.newPage();

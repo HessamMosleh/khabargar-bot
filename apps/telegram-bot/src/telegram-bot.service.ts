@@ -31,12 +31,14 @@ export class TelegramBotService {
     const keyboard = Markup.keyboard([
       ['🔍 دانشگاه قم'], // Row1 with 2 buttons
       ['ایوند'], // Row2 with 2 buttons
+      ['پارک علم و فناوری قم'],
     ])
       .oneTime()
       .resize();
 
     this.handleQomUniSection(bot);
-    this.handleEvandSiteSection(bot);
+    this.handlePlainSites(bot, 'ایوند', 'evand');
+    this.handlePlainSites(bot, 'پارک علم و فناوری قم', 'qom-stp');
     return keyboard;
   }
 
@@ -103,11 +105,15 @@ export class TelegramBotService {
     });
   }
 
-  private handleEvandSiteSection(bot: Telegraf<Context>) {
-    bot.hears('ایوند', async (ctx) => {
+  private handlePlainSites(
+    bot: Telegraf<Context>,
+    botHears: string,
+    brokerEvent: string,
+  ) {
+    bot.hears(botHears, async (ctx) => {
       const message = await ctx.reply('در حال استخراج لطفا یک دقیقه صبر کنید');
       this.crawlerClient
-        .send('evand', {})
+        .send(brokerEvent, {})
         .pipe(
           timeout(60000),
           catchError((val) => of(`I caught: ${val}`)),

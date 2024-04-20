@@ -34,4 +34,14 @@ export class CrawlerController {
     this.rmqService.ack(context);
     return results;
   }
+
+  @MessagePattern('qom-stp')
+  getQomSTPNews(
+    @Payload() data: Record<string, any>,
+    @Ctx() context: RmqContext,
+  ) {
+    const results = this.service.crawlingQomSTP();
+    this.rmqService.ack(context);
+    return results;
+  }
 }

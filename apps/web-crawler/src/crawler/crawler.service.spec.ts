@@ -26,4 +26,8 @@ describe('CrawlerService', () => {
   it('do crawling evandSite', async () => {
     await service.crawlingEvandSite();
   }, 50000);
+
+  it('do crawling QomSTP', async () => {
+    await service.crawlingQomSTP();
+  }, 50000);
 });
