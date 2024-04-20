@@ -29,7 +29,7 @@ export class TelegramBotService {
 
   initNewsWebsitesKeyboard(bot: Telegraf<Context>): any {
     const keyboard = Markup.keyboard([
-      ['🔍 دانشگاه قم'], // Row1 with 2 buttons
+      ['🔍 دانشگاه قم', 'دانشگاه فارابی'], // Row1 with 2 buttons
       ['ایوند'], // Row2 with 2 buttons
       ['پارک علم و فناوری قم'],
     ])
@@ -39,6 +39,7 @@ export class TelegramBotService {
     this.handleQomUniSection(bot);
     this.handlePlainSites(bot, 'ایوند', 'evand');
     this.handlePlainSites(bot, 'پارک علم و فناوری قم', 'qom-stp');
+    this.handlePlainSites(bot, 'دانشگاه فارابی', 'farabi-events');
     return keyboard;
   }
 
@@ -124,7 +125,12 @@ export class TelegramBotService {
             await ctx.reply('سایت با مشکل مواجه شده است لطفا دباره تلاش کنید');
           else
             for (const newEl of events)
-              await ctx.reply(newEl, { parse_mode: 'Markdown' });
+              if (typeof newEl !== 'string')
+                await ctx.replyWithPhoto(
+                  { url: newEl.picUrl },
+                  { caption: newEl.description },
+                );
+              else await ctx.reply(newEl, { parse_mode: 'Markdown' });
         });
     });
   }

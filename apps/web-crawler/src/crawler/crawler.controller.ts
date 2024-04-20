@@ -44,4 +44,11 @@ export class CrawlerController {
     this.rmqService.ack(context);
     return results;
   }
+
+  @MessagePattern('farabi-events')
+  getFarabiEvents(@Payload() data: any[], @Ctx() context: RmqContext) {
+    const results = this.service.crawlingFarabi();
+    this.rmqService.ack(context);
+    return results;
+  }
 }

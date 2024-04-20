@@ -30,4 +30,8 @@ describe('CrawlerService', () => {
   it('do crawling QomSTP', async () => {
     await service.crawlingQomSTP();
   }, 50000);
+
+  it('do crawling farabi events', async () => {
+    await service.crawlingFarabi();
+  }, 50000);
 });

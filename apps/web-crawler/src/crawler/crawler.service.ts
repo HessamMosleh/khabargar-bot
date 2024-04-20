@@ -161,6 +161,47 @@ export class CrawlerService {
     return events;
   }
 
+  async crawlingFarabi() {
+    const currentURL = 'https://farabi.ut.ac.ir/fa';
+
+    await this.checkUrlHealth(currentURL);
+    const { browser, page } = await this.initPuppeteer(currentURL);
+
+    const eventsHandles = await page.$$(
+      '#main-slider-album > div.owl-stage-outer > div > .owl-item:not(.cloned)',
+    );
+
+    const events = [];
+    for (const event of eventsHandles) {
+      let picUrl = await page.evaluate(
+        (el) => el.querySelector('div  > div > a > img')?.getAttribute('src'),
+        event,
+      );
+
+      if (!picUrl.startsWith('http')) picUrl = new URL(picUrl, currentURL).href;
+
+      const eventLink = await page.evaluate(
+        (el) => el.querySelector('div > div > a')?.getAttribute('href'),
+        event,
+      );
+
+      const title = await page.evaluate(
+        (el) =>
+          el.querySelector('div > div > .carousel-caption > h2')?.textContent,
+        event,
+      );
+      if (picUrl && eventLink)
+        events.push({
+          picUrl,
+          description: `*${title}*\n\nلینک خبر:${eventLink}`,
+        });
+    }
+
+    await browser.close();
+
+    return events;
+  }
+
   private async checkUrlHealth(url) {
     const resp = await fetch(url);
     if (resp.status > 399) {
