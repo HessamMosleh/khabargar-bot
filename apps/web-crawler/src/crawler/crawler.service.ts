@@ -181,8 +181,8 @@ export class CrawlerService {
 
   private async initPuppeteer(url) {
     const browser = await puppeteer.launch({
-      headless: false,
-      // executablePath: '/usr/bin/google-chrome',
+      headless: true,
+      executablePath: '/usr/bin/google-chrome',
       args: ['--no-sandbox'],
     });
     const page = await browser.newPage();
