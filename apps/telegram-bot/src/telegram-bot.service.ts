@@ -3,7 +3,7 @@ import { Context, Markup, Telegraf } from 'telegraf';
 import * as process from 'process';
 import { ClientProxy } from '@nestjs/microservices';
 import { CRAWLER_SERVICE } from './constants/service';
-import { catchError, of } from 'rxjs';
+import { catchError, of, timeout } from 'rxjs';
 
 @Injectable()
 export class TelegramBotService {
@@ -67,7 +67,10 @@ export class TelegramBotService {
       await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید');
       this.crawlerClient
         .send('qom-events', {})
-        .pipe(catchError((val) => of(`I caught: ${val}`)))
+        .pipe(
+          timeout(60000),
+          catchError((val) => of(`I caught: ${val}`)),
+        )
         .subscribe(async (events) => {
           if (!Array.isArray(events))
             await ctx.editMessageText(
@@ -84,7 +87,10 @@ export class TelegramBotService {
         .send('qom-news', {
           count: Number(ctx.match[0].split('_')[2]),
         })
-        .pipe(catchError((val) => of(`I caught: ${val}`)))
+        .pipe(
+          timeout(60000),
+          catchError((val) => of(`I caught: ${val}`)),
+        )
         .subscribe(async (news) => {
           if (!Array.isArray(news))
             await ctx.editMessageText(
@@ -102,7 +108,10 @@ export class TelegramBotService {
       const message = await ctx.reply('در حال استخراج لطفا یک دقیقه صبر کنید');
       this.crawlerClient
         .send('evand', {})
-        .pipe(catchError((val) => of(`I caught: ${val}`)))
+        .pipe(
+          timeout(60000),
+          catchError((val) => of(`I caught: ${val}`)),
+        )
         .subscribe(async (events) => {
           await ctx.deleteMessage(message.message_id);
           if (!Array.isArray(events))

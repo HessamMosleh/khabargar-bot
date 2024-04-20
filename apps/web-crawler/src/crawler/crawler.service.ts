@@ -63,7 +63,6 @@ export class CrawlerService {
   }
 
   async crawlingQomUniversityEvents() {
-    console.log('received');
     const currentURL = 'https://qom.ac.ir';
 
     await this.checkUrlHealth(currentURL);
