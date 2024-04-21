@@ -210,7 +210,7 @@ export class CrawlerService {
     const { browser, page } = await this.initPuppeteer(currentURL);
 
     const eventsHandles = await page.$$(
-      '#w23d85a98673c4f116f7ad6c6e3e2ba020 > div > div > div.col-md-4 > article > div.item-content',
+      'body > div.container.main-content > div > div > div.news-index.blog-view > div > div > div > div.col-md-4 > article > div.item-content',
     );
 
     const events = [];
