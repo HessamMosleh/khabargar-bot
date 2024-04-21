@@ -38,4 +38,12 @@ describe('CrawlerService', () => {
   it('do crawling farabi news', async () => {
     await service.crawlingFarabiNews();
   }, 50000);
+
+  it('do crawling ccima news', async () => {
+    await service.crawlingQomCcimaNews();
+  }, 50000);
+
+  it('do crawling ccima announcements', async () => {
+    await service.crawlingQomCcimaAnnouncements();
+  }, 50000);
 });

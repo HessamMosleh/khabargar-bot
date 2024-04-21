@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Context, Markup, Telegraf } from 'telegraf';
 import * as process from 'process';
 import { ClientProxy } from '@nestjs/microservices';
@@ -7,6 +7,7 @@ import { catchError, of, timeout } from 'rxjs';
 
 @Injectable()
 export class TelegramBotService {
+  private readonly logger = new Logger(TelegramBotService.name);
   constructor(@Inject(CRAWLER_SERVICE) private crawlerClient: ClientProxy) {
     this.initBot();
   }
@@ -30,7 +31,7 @@ export class TelegramBotService {
   initNewsWebsitesKeyboard(bot: Telegraf<Context>): any {
     const keyboard = Markup.keyboard([
       ['🔍 دانشگاه قم', 'دانشگاه فارابی'], // Row1 with 2 buttons
-      ['ایوند'], // Row2 with 2 buttons
+      ['ایوند', 'اتاق بازرگانی قم'], // Row2 with 2 buttons
       ['پارک علم و فناوری قم'],
     ])
       .oneTime()
@@ -38,6 +39,7 @@ export class TelegramBotService {
 
     this.handleQomUniSection(bot);
     this.handleFarabiUniSection(bot);
+    this.handleQomCcimaSection(bot);
     this.handlePlainSites(bot, 'ایوند', 'evand');
     this.handlePlainSites(bot, 'پارک علم و فناوری قم', 'qom-stp');
     return keyboard;
@@ -117,6 +119,34 @@ export class TelegramBotService {
     );
   }
 
+  private handleQomCcimaSection(bot: Telegraf<Context>) {
+    bot.hears('اتاق بازرگانی قم', (ctx) =>
+      ctx.reply(
+        'لطفا یک گزینه را انتخاب کنید',
+        Markup.inlineKeyboard([
+          Markup.button.callback('اخبار', 'ccima_news'),
+          Markup.button.callback('اطلاعیه ها', 'ccima_announcements'),
+        ]),
+      ),
+    );
+
+    bot.action(
+      'ccima_news',
+      async (ctx) =>
+        await this.handleSendingSitesResponses('ccima-news', ctx, true),
+    );
+
+    bot.action(
+      'ccima_announcements',
+      async (ctx) =>
+        await this.handleSendingSitesResponses(
+          'ccima-announcements',
+          ctx,
+          true,
+        ),
+    );
+  }
+
   private handlePlainSites(
     bot: Telegraf<Context>,
     botHears: string,
@@ -144,9 +174,10 @@ export class TelegramBotService {
       )
       .subscribe(async (events) => {
         await ctx.deleteMessage(message.message_id);
-        if (!Array.isArray(events))
+        if (!Array.isArray(events)) {
+          this.logger.error(events);
           await ctx.reply('سایت با مشکل مواجه شده است لطفا دباره تلاش کنید');
-        else
+        } else
           for (const newEl of events)
             if (typeof newEl !== 'string')
               await ctx.replyWithPhoto(

@@ -58,4 +58,18 @@ export class CrawlerController {
     this.rmqService.ack(context);
     return results;
   }
+
+  @MessagePattern('ccima-news')
+  getQomCcimaNews(@Payload() data: any[], @Ctx() context: RmqContext) {
+    const results = this.service.crawlingQomCcimaNews();
+    this.rmqService.ack(context);
+    return results;
+  }
+
+  @MessagePattern('ccima-announcements')
+  getQomCcimaAnnouncement(@Payload() data: any[], @Ctx() context: RmqContext) {
+    const results = this.service.crawlingQomCcimaAnnouncements();
+    this.rmqService.ack(context);
+    return results;
+  }
 }

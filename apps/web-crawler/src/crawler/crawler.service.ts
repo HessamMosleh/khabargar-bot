@@ -233,6 +233,81 @@ export class CrawlerService {
     return events;
   }
 
+  async crawlingQomCcimaNews() {
+    const currentURL = 'https://qomccima.ir/latest-news/';
+
+    await this.checkUrlHealth(currentURL);
+    const { browser, page } = await this.initPuppeteer(currentURL);
+
+    const eventsHandles = await page.$$(
+      'body > main > div > section.elementor-element-01401ea > div > div.elementor-column.elementor-col-50.elementor-top-column.elementor-element.elementor-element-4990b0e.animated.fadeInUp > div > div.elementor-element-b7fdff1 > div > div.elementor-posts-container > article',
+    );
+
+    const events = [];
+    for (const event of eventsHandles) {
+      const eventLink = await page.evaluate(
+        (el) =>
+          el.querySelector('article > div > h3 > a')?.getAttribute('href'),
+        event,
+      );
+
+      const title = await page.evaluate(
+        (el) => el.querySelector('article > div > h3 > a')?.textContent,
+        event,
+      );
+
+      const description = await page.evaluate(
+        (el) =>
+          el.querySelector('article > div > div.elementor-post__excerpt > p')
+            ?.textContent,
+        event,
+      );
+
+      if (title && eventLink)
+        events.push(
+          `*${title}*\n${description || ''}\n\nلینک خبر:${eventLink}`,
+        );
+    }
+
+    await browser.close();
+
+    return events;
+  }
+
+  async crawlingQomCcimaAnnouncements() {
+    const currentURL = 'https://qomccima.ir/announcements/';
+
+    await this.checkUrlHealth(currentURL);
+    const { browser, page } = await this.initPuppeteer(currentURL);
+
+    const eventsHandles = await page.$$(
+      'body > main > div > section.elementor-element-afebd4b > div > div > div > section > div > div.elementor-element-370d5de > div > div > div > div.elementor-posts-container > article',
+    );
+
+    const events = [];
+    for (const event of eventsHandles) {
+      const eventLink = await page.evaluate(
+        (el) =>
+          el
+            .querySelector('article > div > div > h3 > a')
+            ?.getAttribute('href'),
+        event,
+      );
+
+      const title = await page.evaluate(
+        (el) => el.querySelector('article > div > div > h3 > a')?.textContent,
+        event,
+      );
+
+      if (title && eventLink)
+        events.push(`*${title}*\n\nلینک خبر:${eventLink}`);
+    }
+
+    await browser.close();
+
+    return events;
+  }
+
   private async checkUrlHealth(url) {
     const resp = await fetch(url);
     if (resp.status > 399) {
