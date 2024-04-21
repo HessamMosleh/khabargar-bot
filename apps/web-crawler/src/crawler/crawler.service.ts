@@ -161,7 +161,7 @@ export class CrawlerService {
     return events;
   }
 
-  async crawlingFarabi() {
+  async crawlingFarabiEvents() {
     const currentURL = 'https://farabi.ut.ac.ir/fa';
 
     await this.checkUrlHealth(currentURL);
@@ -195,6 +195,37 @@ export class CrawlerService {
           picUrl,
           description: `*${title}*\n\nلینک خبر:${eventLink}`,
         });
+    }
+
+    await browser.close();
+
+    return events;
+  }
+
+  async crawlingFarabiNews() {
+    const currentURL =
+      'https://farabi.ut.ac.ir/fa/news/category/258/%D8%A7%D8%AE%D8%A8%D8%A7%D8%B1';
+
+    await this.checkUrlHealth(currentURL);
+    const { browser, page } = await this.initPuppeteer(currentURL);
+
+    const eventsHandles = await page.$$(
+      '#w23d85a98673c4f116f7ad6c6e3e2ba020 > div > div > div.col-md-4 > article > div.item-content',
+    );
+
+    const events = [];
+    for (const event of eventsHandles) {
+      const eventLink = await page.evaluate(
+        (el) => el.querySelector('div > h3 > a')?.getAttribute('href'),
+        event,
+      );
+
+      const title = await page.evaluate(
+        (el) => el.querySelector('div > h3 > a')?.textContent,
+        event,
+      );
+      if (title && eventLink)
+        events.push(`*${title}*\n\nلینک خبر:${eventLink}`);
     }
 
     await browser.close();

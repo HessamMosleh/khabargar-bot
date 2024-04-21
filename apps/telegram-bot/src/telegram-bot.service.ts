@@ -37,9 +37,9 @@ export class TelegramBotService {
       .resize();
 
     this.handleQomUniSection(bot);
+    this.handleFarabiUniSection(bot);
     this.handlePlainSites(bot, 'ایوند', 'evand');
     this.handlePlainSites(bot, 'پارک علم و فناوری قم', 'qom-stp');
-    this.handlePlainSites(bot, 'دانشگاه فارابی', 'farabi-events');
     return keyboard;
   }
 
@@ -66,24 +66,11 @@ export class TelegramBotService {
       ),
     );
 
-    bot.action('qom_events', async (ctx) => {
-      await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید');
-      this.crawlerClient
-        .send('qom-events', {})
-        .pipe(
-          timeout(60000),
-          catchError((val) => of(`I caught: ${val}`)),
-        )
-        .subscribe(async (events) => {
-          if (!Array.isArray(events))
-            await ctx.editMessageText(
-              'سایت با مشکل مواجه شده است لطفا دباره تلاش کنید',
-            );
-          else
-            for (const newEl of events)
-              await ctx.reply(newEl, { parse_mode: 'Markdown' });
-        });
-    });
+    bot.action(
+      'qom_events',
+      async (ctx) =>
+        await this.handleSendingSitesResponses('qom-events', ctx, true),
+    );
     bot.action(/^qom_count_\d+$/, async (ctx) => {
       await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید');
       this.crawlerClient
@@ -106,32 +93,67 @@ export class TelegramBotService {
     });
   }
 
+  private handleFarabiUniSection(bot: Telegraf<Context>) {
+    bot.hears('دانشگاه فارابی', (ctx) =>
+      ctx.reply(
+        'لطفا یک گزینه را انتخاب کنید',
+        Markup.inlineKeyboard([
+          Markup.button.callback('اخبار', 'farabi_news'),
+          Markup.button.callback('رویداد ها', 'farabi_events'),
+        ]),
+      ),
+    );
+
+    bot.action(
+      'farabi_news',
+      async (ctx) =>
+        await this.handleSendingSitesResponses('farabi-news', ctx, true),
+    );
+
+    bot.action(
+      'farabi_events',
+      async (ctx) =>
+        await this.handleSendingSitesResponses('farabi-events', ctx, true),
+    );
+  }
+
   private handlePlainSites(
     bot: Telegraf<Context>,
     botHears: string,
     brokerEvent: string,
   ) {
-    bot.hears(botHears, async (ctx) => {
-      const message = await ctx.reply('در حال استخراج لطفا یک دقیقه صبر کنید');
-      this.crawlerClient
-        .send(brokerEvent, {})
-        .pipe(
-          timeout(60000),
-          catchError((val) => of(`I caught: ${val}`)),
-        )
-        .subscribe(async (events) => {
-          await ctx.deleteMessage(message.message_id);
-          if (!Array.isArray(events))
-            await ctx.reply('سایت با مشکل مواجه شده است لطفا دباره تلاش کنید');
-          else
-            for (const newEl of events)
-              if (typeof newEl !== 'string')
-                await ctx.replyWithPhoto(
-                  { url: newEl.picUrl },
-                  { caption: newEl.description },
-                );
-              else await ctx.reply(newEl, { parse_mode: 'Markdown' });
-        });
-    });
+    bot.hears(
+      botHears,
+      async (ctx) => await this.handleSendingSitesResponses(brokerEvent, ctx),
+    );
+  }
+
+  private async handleSendingSitesResponses(
+    brokerEvent: string,
+    ctx,
+    isEditMessage = false,
+  ) {
+    const message = isEditMessage
+      ? await ctx.editMessageText('در حال استخراج لطفا یک دقیقه صبر کنید')
+      : await ctx.reply('در حال استخراج لطفا یک دقیقه صبر کنید');
+    this.crawlerClient
+      .send(brokerEvent, {})
+      .pipe(
+        timeout(60000),
+        catchError((val) => of(`I caught: ${val}`)),
+      )
+      .subscribe(async (events) => {
+        await ctx.deleteMessage(message.message_id);
+        if (!Array.isArray(events))
+          await ctx.reply('سایت با مشکل مواجه شده است لطفا دباره تلاش کنید');
+        else
+          for (const newEl of events)
+            if (typeof newEl !== 'string')
+              await ctx.replyWithPhoto(
+                { url: newEl.picUrl },
+                { caption: newEl.description },
+              );
+            else await ctx.reply(newEl, { parse_mode: 'Markdown' });
+      });
   }
 }

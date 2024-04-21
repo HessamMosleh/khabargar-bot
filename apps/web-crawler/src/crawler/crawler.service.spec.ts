@@ -32,6 +32,10 @@ describe('CrawlerService', () => {
   }, 50000);
 
   it('do crawling farabi events', async () => {
-    await service.crawlingFarabi();
+    await service.crawlingFarabiEvents();
+  }, 50000);
+
+  it('do crawling farabi news', async () => {
+    await service.crawlingFarabiNews();
   }, 50000);
 });
