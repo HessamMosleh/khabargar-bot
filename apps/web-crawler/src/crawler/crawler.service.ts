@@ -308,6 +308,64 @@ export class CrawlerService {
     return events;
   }
 
+  async crawlingJDQomNews() {
+    const currentURL = 'https://jd-qom.ac.ir/fa/news';
+
+    await this.checkUrlHealth(currentURL);
+    const { browser, page } = await this.initPuppeteer(currentURL);
+
+    let isButtonDisabled;
+
+    const news = [];
+    while (!isButtonDisabled && news.length < 20) {
+      const newsHandles = await page.$$(
+        'div.container.main-content > div > div > div.news-index.list-view > div > div > div',
+      );
+
+      for (const newsHandel of newsHandles) {
+        const title = await page.evaluate(
+          (el) => el.querySelector('div > article > div > h3')?.textContent,
+          newsHandel,
+        );
+
+        const description = await page.evaluate(
+          (el) => el.querySelector('div > article > div > p')?.textContent,
+          newsHandel,
+        );
+
+        const newsLink = await page.evaluate(
+          (el) =>
+            el
+              .querySelector('div > article > div > h3 > a')
+              ?.getAttribute('href'),
+          newsHandel,
+        );
+        if (title && newsLink)
+          news.push(
+            `*${title}*\n${description ? description + '\n\n' : '\n'}لینک خبر:${newsLink}`,
+          );
+      }
+
+      isButtonDisabled =
+        (await page.$(
+          'div.container.main-content > div > div > div.news-index.list-view > div > ul',
+        )) === null;
+
+      if (!isButtonDisabled && news.length < 20) {
+        await page.click(
+          'div.container.main-content > div > div > div.news-index.list-view > div > ul > li.next > a',
+        );
+        await page.waitForSelector(
+          'div.container.main-content > div > div > div.news-index.list-view > div > div > div:nth-child(1)',
+        );
+      }
+    }
+
+    await browser.close();
+
+    return news;
+  }
+
   private async checkUrlHealth(url) {
     const resp = await fetch(url);
     if (resp.status > 399) {

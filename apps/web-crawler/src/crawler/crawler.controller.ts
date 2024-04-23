@@ -72,4 +72,11 @@ export class CrawlerController {
     this.rmqService.ack(context);
     return results;
   }
+
+  @MessagePattern('jd-qom')
+  getJDQomNews(@Payload() data: any[], @Ctx() context: RmqContext) {
+    const results = this.service.crawlingJDQomNews();
+    this.rmqService.ack(context);
+    return results;
+  }
 }

@@ -46,4 +46,8 @@ describe('CrawlerService', () => {
   it('do crawling ccima announcements', async () => {
     await service.crawlingQomCcimaAnnouncements();
   }, 50000);
+
+  it('do crawling JD Qom News', async () => {
+    await service.crawlingJDQomNews();
+  }, 50000);
 });

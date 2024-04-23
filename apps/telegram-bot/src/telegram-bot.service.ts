@@ -32,7 +32,7 @@ export class TelegramBotService {
     const keyboard = Markup.keyboard([
       ['🔍 دانشگاه قم', 'دانشگاه فارابی'], // Row1 with 2 buttons
       ['ایوند', 'اتاق بازرگانی قم'], // Row2 with 2 buttons
-      ['پارک علم و فناوری قم'],
+      ['پارک علم و فناوری قم', 'جهاد دانشگاهیی قم'],
     ])
       .oneTime()
       .resize();
@@ -42,6 +42,7 @@ export class TelegramBotService {
     this.handleQomCcimaSection(bot);
     this.handlePlainSites(bot, 'ایوند', 'evand');
     this.handlePlainSites(bot, 'پارک علم و فناوری قم', 'qom-stp');
+    this.handlePlainSites(bot, 'جهاد دانشگاهیی قم', 'jd-qom');
     return keyboard;
   }
 
